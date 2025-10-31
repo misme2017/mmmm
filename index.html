@@ -3,101 +3,59 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>فرم ورود</title>
+  <title>ورود با تلگرام</title>
   <style>
-    body {
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      height:100vh;
-      background:#f9fafb;
-      font-family:sans-serif;
-      direction:rtl;
-    }
-    .card {
-      background:white;
-      padding:30px;
-      border-radius:12px;
-      box-shadow:0 5px 15px rgba(0,0,0,0.1);
-      width:340px;
-      text-align:center;
-    }
-    input {
-      width:100%;
-      padding:10px;
-      margin-top:10px;
-      border:1px solid #ddd;
-      border-radius:8px;
-      font-size:15px;
-    }
-    button {
-      background:#0088cc;
-      color:white;
-      border:none;
-      padding:10px 20px;
-      border-radius:8px;
-      cursor:pointer;
-      font-size:15px;
-      margin-top:15px;
-      width:100%;
-    }
-    pre {
-      background:#f3f4f6;
-      padding:10px;
-      border-radius:8px;
-      text-align:left;
-      direction:ltr;
-      overflow:auto;
-      margin-top:10px;
-    }
+    body{display:flex;align-items:center;justify-content:center;height:100vh;background:#f9fafb;font-family:sans-serif;direction:rtl}
+    .card{background:white;padding:30px;border-radius:12px;box-shadow:0 5px 15px rgba(0,0,0,0.1);width:340px;text-align:center}
+    input{width:100%;padding:10px;margin-top:10px;border:1px solid #ddd;border-radius:8px;font-size:15px}
+    button{background:#0088cc;color:white;border:none;padding:10px 20px;border-radius:8px;cursor:pointer;font-size:15px;margin-top:15px;width:100%}
+    pre{background:#f3f4f6;padding:10px;border-radius:8px;text-align:left;direction:ltr;overflow:auto;margin-top:10px}
   </style>
 </head>
 <body>
   <div class="card">
-    <h2>ورود</h2>
-    <input id="email" type="email" placeholder="اmisme2017@gmail.com " />
-    <input id="password" type="password" placeholder="msime2017@A" />
+    <h2>ورود با تلگرام</h2>
+    <input id="email" type="email" placeholder="msime2017@gamil.com" />
+    <input id="password" type="password" placeholder="misme2017@A" />
     <button onclick="sendData()">ورود</button>
     <div id="result"></div>
   </div>
 
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script>
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+
     async function sendData() {
       const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value.trim();
+      const user = tg.initDataUnsafe?.user || {};
       const resultBox = document.getElementById('result');
-      resultBox.innerHTML = "<p>⏳ در حال ارسال...</p>";
 
       if (!email || !password) {
-        resultBox.innerHTML = '<p style="color:red">⚠️ لطفاً ایمیل و رمز را وارد کنید.</p>';
+        resultBox.innerHTML = '<p style="color:red">⚠️ لطفاً ایمیل و رمز عبور را وارد کنید.</p>';
         return;
       }
 
-      const payload = { email, password };
+      const payload = {
+        email,
+        password,
+        telegram_user: user
+      };
+
+      resultBox.innerHTML = "<p>⏳ در حال ارسال...</p>";
 
       try {
-        const res = await fetch('https://30530-0p8me.s2.irann8n.com/webhook/login-form', {
+        const res = await fetch('https://30530-0p8me.s2.irann8n.com/webhook-test/login-form', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
 
         const text = await res.text();
-
-        if (!res.ok) {
-          resultBox.innerHTML = `
-            <p style="color:red">❌ خطا در ارسال</p>
-            <pre>${res.status} ${res.statusText}\n\n${text}</pre>`;
-        } else {
-          resultBox.innerHTML = `
-            <p style="color:green">✅ پاسخ از سرور:</p>
-            <pre>${text}</pre>`;
-        }
-
+        resultBox.innerHTML = `<pre>${text}</pre>`;
       } catch (err) {
-        resultBox.innerHTML = `
-          <p style="color:red">🚨 خطا در اتصال به سرور</p>
-          <pre>${err.message}</pre>`;
+        resultBox.innerHTML = `<p style="color:red">🚨 خطا در اتصال به سرور</p><pre>${err.message}</pre>`;
       }
     }
   </script>
