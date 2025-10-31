@@ -3,121 +3,184 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>ورود </title>
+  <title>ورود و پروفایل</title>
+  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700&display=swap" rel="stylesheet">
   <style>
     body {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      background: #f9fafb;
-      font-family: sans-serif;
+      margin:0;
+      font-family: 'Vazirmatn', sans-serif;
+      background: linear-gradient(135deg, #74ebd5, #acb6e5);
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      height:100vh;
       direction: rtl;
     }
     .card {
-      background: white;
-      padding: 30px;
-      border-radius: 12px;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-      width: 340px;
-      text-align: center;
+      background:white;
+      border-radius:16px;
+      box-shadow:0 10px 25px rgba(0,0,0,0.15);
+      padding:30px;
+      width:360px;
+      max-width:90%;
+      text-align:center;
+      transition: all 0.5s ease;
     }
     input {
-      width: 100%;
-      padding: 10px;
-      margin-top: 10px;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      font-size: 15px;
+      width:100%;
+      padding:12px;
+      margin:10px 0;
+      border:1px solid #ddd;
+      border-radius:10px;
+      font-size:15px;
+      transition: all 0.3s ease;
+    }
+    input:focus {
+      border-color:#0088cc;
+      outline:none;
+      box-shadow:0 0 5px rgba(0,136,204,0.4);
     }
     button {
-      background: #0088cc;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 15px;
-      margin-top: 15px;
-      width: 100%;
+      width:100%;
+      padding:12px;
+      margin-top:15px;
+      border:none;
+      border-radius:10px;
+      background:#0088cc;
+      color:white;
+      font-size:16px;
+      cursor:pointer;
+      transition: all 0.3s ease;
     }
-    .success {
-      color: green;
-      margin-top: 10px;
+    button:hover {
+      background:#006fa1;
     }
-    .error {
-      color: red;
-      margin-top: 10px;
+    .hidden {
+      display:none;
     }
-    #nextCard {
-      display: none;
+    .success-msg {
+      color:green;
+      font-weight:bold;
+      margin-bottom:10px;
+    }
+    .error-msg {
+      color:red;
+      font-weight:bold;
+      margin-bottom:10px;
+    }
+    .profile {
+      display:flex;
+      align-items:center;
+      justify-content:flex-start;
+      gap:10px;
+      margin-bottom:15px;
+    }
+    .profile img {
+      width:50px;
+      height:50px;
+      border-radius:50%;
+    }
+    .fields input {
+      margin-bottom:10px;
     }
   </style>
 </head>
 <body>
+  <!-- کارت ورود -->
   <div id="loginCard" class="card">
-    <h2>ورود با تلگرام</h2>
+    <h2>ورود</h2>
     <input id="email" type="email" placeholder="ایمیل" />
     <input id="password" type="password" placeholder="رمز عبور" />
-    <button onclick="sendData()">ورود</button>
-    <div id="result"></div>
+    <button onclick="sendLogin()">ورود</button>
+    <div id="loginResult"></div>
   </div>
 
-  <div id="nextCard" class="card">
-    <h2 id="welcomeMsg">در حال بارگذاری...</h2>
-    <p>✅ ورود شما موفقیت‌آمیز بود!</p>
+  <!-- کارت موفقیت و فرم تکمیل اطلاعات -->
+  <div id="profileCard" class="card hidden">
+    <div class="profile">
+      <img id="userPhoto" src="" alt="Profile"/>
+      <div id="welcomeMsg">سلام کاربر!</div>
+    </div>
+    <div class="fields">
+      <input id="field1" placeholder="فیلد 1"/>
+      <input id="field2" placeholder="فیلد 2"/>
+      <input id="field3" placeholder="فیلد 3"/>
+    </div>
+    <button onclick="sendProfile()">ثبت اطلاعات</button>
+    <div id="profileResult"></div>
   </div>
 
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script>
-    const tg = window.Telegram.WebApp;
-    tg.expand();
+    const loginCard = document.getElementById('loginCard');
+    const profileCard = document.getElementById('profileCard');
+    const loginResult = document.getElementById('loginResult');
+    const profileResult = document.getElementById('profileResult');
+    const welcomeMsg = document.getElementById('welcomeMsg');
+    const userPhoto = document.getElementById('userPhoto');
 
-    async function sendData() {
+    async function sendLogin() {
       const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value.trim();
-      const user = tg.initDataUnsafe?.user || {};
-      const resultBox = document.getElementById('result');
 
-      if (!email || !password) {
-        resultBox.innerHTML = '<p class="error">⚠️ لطفاً ایمیل و رمز عبور را وارد کنید.</p>';
+      if(!email || !password){
+        loginResult.innerHTML = '<div class="error-msg">⚠️ ایمیل و رمز را وارد کنید</div>';
         return;
       }
 
-      const payload = {
-        email,
-        password,
-        telegram_user: user
-      };
-
-      resultBox.innerHTML = "<p>⏳ در حال ارسال...</p>";
+      loginResult.innerHTML = '⏳ در حال ارسال...';
 
       try {
-        const res = await fetch('https://30530-0p8me.s2.irann8n.com/webhook-teat/login-form', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
+        const res = await fetch('https://30530-0p8me.s2.irann8n.com/webhook/login-form', {
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({email,password})
         });
-
         const data = await res.json();
-        console.log("Response:", data);
+        console.log('Login response:', data);
 
-        const verified = data?.[0]?.data?.user?.verified || data?.[0]?.verified;
+        const user = data?.[0]?.data?.user || data?.[0];
+        if(user?.verified){
+          // نمایش کارت پروفایل
+          loginCard.classList.add('hidden');
+          profileCard.classList.remove('hidden');
+          welcomeMsg.innerText = `سلام ${user.firstName || 'کاربر'}!`;
+          if(user.photo_url) userPhoto.src = user.photo_url;
 
-        if (verified) {
-          document.getElementById('loginCard').style.display = 'none';
-          document.getElementById('nextCard').style.display = 'block';
-          document.getElementById('welcomeMsg').innerText = `سلام ${user.first_name || 'کاربر'}! ورود شما موفقیت‌آمیز بود.`;
-          
-          // پیام موفقیت به تلگرام
-          tg.sendData(JSON.stringify({ success: true, email }));
+          loginResult.innerHTML = '';
         } else {
-          resultBox.innerHTML = '<p class="error">❌ ورود ناموفق بود. لطفاً اطلاعات را بررسی کنید.</p>';
+          loginResult.innerHTML = '<div class="error-msg">❌ ورود ناموفق بود</div>';
         }
-
-      } catch (err) {
+      } catch(err){
         console.error(err);
-        resultBox.innerHTML = `<p class="error">🚨 خطا در اتصال به سرور</p><pre>${err.message}</pre>`;
+        loginResult.innerHTML = `<div class="error-msg">🚨 خطا در اتصال به سرور</div>`;
+      }
+    }
+
+    async function sendProfile(){
+      const f1 = document.getElementById('field1').value.trim();
+      const f2 = document.getElementById('field2').value.trim();
+      const f3 = document.getElementById('field3').value.trim();
+
+      if(!f1 || !f2 || !f3){
+        profileResult.innerHTML = '<div class="error-msg">⚠️ لطفاً همه فیلدها را پر کنید</div>';
+        return;
+      }
+
+      profileResult.innerHTML = '⏳ در حال ارسال اطلاعات...';
+
+      try {
+        const res = await fetch('https://30530-0p8me.s2.irann8n.com/webhook-test/profile', {
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({field1:f1, field2:f2, field3:f3})
+        });
+        const result = await res.json();
+        console.log('Profile response:', result);
+
+        profileResult.innerHTML = '<div class="success-msg">✅ اطلاعات با موفقیت ارسال شد!</div>';
+      } catch(err){
+        console.error(err);
+        profileResult.innerHTML = `<div class="error-msg">🚨 خطا در ارسال اطلاعات</div>`;
       }
     }
   </script>
