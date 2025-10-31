@@ -3,30 +3,24 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>ورود با تلگرام | v1.2</title>
+  <title>ورود با تلگرام - نسخه 1.2</title>
   <style>
     body {
       display: flex;
       align-items: center;
       justify-content: center;
       height: 100vh;
-      background: #f4f6f8;
+      background: #f9fafb;
       font-family: sans-serif;
       direction: rtl;
-      margin: 0;
     }
     .card {
       background: white;
-      padding: 25px;
-      border-radius: 14px;
+      padding: 30px;
+      border-radius: 12px;
       box-shadow: 0 5px 15px rgba(0,0,0,0.1);
       width: 340px;
       text-align: center;
-      transition: all 0.4s ease;
-    }
-    h2 {
-      margin-bottom: 15px;
-      color: #0088cc;
     }
     input {
       width: 100%;
@@ -35,7 +29,6 @@
       border: 1px solid #ddd;
       border-radius: 8px;
       font-size: 15px;
-      outline: none;
     }
     button {
       background: #0088cc;
@@ -47,46 +40,32 @@
       font-size: 15px;
       margin-top: 15px;
       width: 100%;
-      transition: 0.2s;
-    }
-    button:hover {
-      background: #0077b6;
-    }
-    .error {
-      color: red;
-      margin-top: 10px;
     }
     .success {
       color: green;
       margin-top: 10px;
     }
-    pre {
-      background: #f3f4f6;
-      padding: 10px;
-      border-radius: 8px;
-      text-align: left;
-      direction: ltr;
-      overflow: auto;
+    .error {
+      color: red;
       margin-top: 10px;
-      font-size: 13px;
+    }
+    #nextCard {
+      display: none;
     }
   </style>
 </head>
 <body>
-  <!-- فرم لاگین -->
-  <div class="card" id="loginCard">
+  <div id="loginCard" class="card">
     <h2>ورود با تلگرام</h2>
-    <input id="email" type="email" placeholder="ایمیل خود را وارد کنید" />
+    <input id="email" type="email" placeholder="ایمیل" />
     <input id="password" type="password" placeholder="رمز عبور" />
     <button onclick="sendData()">ورود</button>
     <div id="result"></div>
   </div>
 
-  <!-- کارت بعد از تأیید -->
-  <div class="card" id="nextCard" style="display:none;">
-    <h2 id="welcomeMsg">ورود موفق 🎉</h2>
-    <p>اکنون می‌توانید به مرحله بعد بروید.</p>
-    <button onclick="nextStep()">ادامه</button>
+  <div id="nextCard" class="card">
+    <h2 id="welcomeMsg">در حال بارگذاری...</h2>
+    <p>✅ ورود شما موفقیت‌آمیز بود!</p>
   </div>
 
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -111,33 +90,35 @@
         telegram_user: user
       };
 
-      resultBox.innerHTML = "<p>⏳ در حال بررسی اطلاعات...</p>";
+      resultBox.innerHTML = "<p>⏳ در حال ارسال...</p>";
 
       try {
-        const res = await fetch('https://30530-0p8me.s2.irann8n.com/webhook-test/login-form', {  // 👈 اینجا آدرس وبهوک خودت
+        const res = await fetch('https://30530-0p8me.s2.irann8n.com/webhook-test/login-form', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
 
         const data = await res.json();
+        console.log("Response:", data);
 
-        // بررسی مقدار verified در پاسخ n8n
-        if (Array.isArray(data) && data[0]?.verified) {
+        const verified = data?.[0]?.data?.user?.verified || data?.[0]?.verified;
+
+        if (verified) {
           document.getElementById('loginCard').style.display = 'none';
           document.getElementById('nextCard').style.display = 'block';
           document.getElementById('welcomeMsg').innerText = `سلام ${user.first_name || 'کاربر'}! ورود شما موفقیت‌آمیز بود.`;
+          
+          // پیام موفقیت به تلگرام
+          tg.sendData(JSON.stringify({ success: true, email }));
         } else {
           resultBox.innerHTML = '<p class="error">❌ ورود ناموفق بود. لطفاً اطلاعات را بررسی کنید.</p>';
         }
+
       } catch (err) {
+        console.error(err);
         resultBox.innerHTML = `<p class="error">🚨 خطا در اتصال به سرور</p><pre>${err.message}</pre>`;
       }
-    }
-
-    function nextStep() {
-      tg.sendData(JSON.stringify({ step: "verified_done" }));
-      tg.close(); // می‌تونی ببندی یا نگه داری برای مرحله بعد
     }
   </script>
 </body>
