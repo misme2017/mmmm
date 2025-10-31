@@ -5,24 +5,82 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>ورود با تلگرام</title>
   <style>
-    body{display:flex;align-items:center;justify-content:center;height:100vh;background:#f9fafb;font-family:sans-serif;direction:rtl}
-    .card{background:white;padding:30px;border-radius:12px;box-shadow:0 5px 15px rgba(0,0,0,0.1);width:340px;text-align:center}
-    input{width:100%;padding:10px;margin-top:10px;border:1px solid #ddd;border-radius:8px;font-size:15px}
-    button{background:#0088cc;color:white;border:none;padding:10px 20px;border-radius:8px;cursor:pointer;font-size:15px;margin-top:15px;width:100%}
-    pre{background:#f3f4f6;padding:10px;border-radius:8px;text-align:left;direction:ltr;overflow:auto;margin-top:10px}
+    body {
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      height:100vh;
+      background:#f9fafb;
+      font-family:sans-serif;
+      direction:rtl;
+    }
+    .card {
+      background:white;
+      padding:30px;
+      border-radius:12px;
+      box-shadow:0 5px 15px rgba(0,0,0,0.1);
+      width:340px;
+      text-align:center;
+      transition:all .3s ease;
+      position:relative;
+    }
+    .version {
+      position:absolute;
+      top:10px;
+      left:15px;
+      font-size:12px;
+      color:#999;
+    }
+    input {
+      width:100%;
+      padding:10px;
+      margin-top:10px;
+      border:1px solid #ddd;
+      border-radius:8px;
+      font-size:15px;
+    }
+    button {
+      background:#0088cc;
+      color:white;
+      border:none;
+      padding:10px 20px;
+      border-radius:8px;
+      cursor:pointer;
+      font-size:15px;
+      margin-top:15px;
+      width:100%;
+    }
+    .success {
+      color:green;
+      font-weight:bold;
+      margin-top:15px;
+    }
+    .error {
+      color:red;
+      margin-top:15px;
+    }
   </style>
 </head>
 <body>
-  <div class="card">
+  <div class="card" id="loginCard">
+    <div class="version">v1.0.0</div>
     <h2>ورود با تلگرام</h2>
-    <input id="email" type="email" placeholder="msime2017@gamil.com" />
-    <input id="password" type="password" placeholder="misme2017@A" />
+    <input id="email" type="email" placeholder="ایمیل خود را وارد کنید" />
+    <input id="password" type="password" placeholder="رمز عبور" />
     <button onclick="sendData()">ورود</button>
     <div id="result"></div>
   </div>
 
+  <div class="card" id="nextCard" style="display:none;">
+    <div class="version">v1.0.0</div>
+    <h2>🎉 خوش آمدید!</h2>
+    <p id="welcomeMsg"></p>
+    <button onclick="nextStep()">ادامه</button>
+  </div>
+
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script>
+    const APP_VERSION = "v1.0.0";
     const tg = window.Telegram.WebApp;
     tg.expand();
 
@@ -33,17 +91,13 @@
       const resultBox = document.getElementById('result');
 
       if (!email || !password) {
-        resultBox.innerHTML = '<p style="color:red">⚠️ لطفاً ایمیل و رمز عبور را وارد کنید.</p>';
+        resultBox.innerHTML = '<p class="error">⚠️ لطفاً ایمیل و رمز عبور را وارد کنید.</p>';
         return;
       }
 
-      const payload = {
-        email,
-        password,
-        telegram_user: user
-      };
+      const payload = { email, password, telegram_user: user, version: APP_VERSION };
 
-      resultBox.innerHTML = "<p>⏳ در حال ارسال...</p>";
+      resultBox.innerHTML = "<p>⏳ در حال بررسی...</p>";
 
       try {
         const res = await fetch('https://30530-0p8me.s2.irann8n.com/webhook-test/login-form', {
@@ -52,11 +106,27 @@
           body: JSON.stringify(payload)
         });
 
-        const text = await res.text();
-        resultBox.innerHTML = `<pre>${text}</pre>`;
+        const data = await res.json();
+
+        if (data.verified) {
+          document.getElementById('loginCard').style.display = 'none';
+          document.getElementById('nextCard').style.display = 'block';
+          document.getElementById('welcomeMsg').innerText = `سلام ${user.first_name || 'کاربر'}! ورود شما موفقیت‌آمیز بود.`;
+        } else {
+          resultBox.innerHTML = '<p class="error">❌ ورود ناموفق بود. لطفاً اطلاعات را بررسی کنید.</p>';
+        }
+
       } catch (err) {
-        resultBox.innerHTML = `<p style="color:red">🚨 خطا در اتصال به سرور</p><pre>${err.message}</pre>`;
+        resultBox.innerHTML = `<p class="error">🚨 خطا در اتصال به سرور</p><pre>${err.message}</pre>`;
       }
+    }
+
+    function nextStep() {
+      document.getElementById('nextCard').innerHTML = `
+        <div class="version">${APP_VERSION}</div>
+        <h2>📊 داشبورد</h2>
+        <p>به زودی اطلاعات حساب شما نمایش داده می‌شود...</p>
+      `;
     }
   </script>
 </body>
