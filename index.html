@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mini App</title>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<style>
+body { font-family: sans-serif; background: #f3f3f3; padding: 20px; }
+.container { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+input, button { width: 100%; padding: 10px; margin-top: 10px; border-radius: 8px; border: 1px solid #ccc; }
+button { background: #0088cc; color: white; border: none; cursor: pointer; }
+button:hover { background: #0078b8; }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h2>فرم تست Mini App</h2>
+  <input type="text" id="name" placeholder="نام شما">
+  <button onclick="send()">ارسال</button>
+  <div id="response"></div>
+</div>
+
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script>
+const tg = window.Telegram.WebApp;
+tg.expand(); // باز کردن کامل صفحه
+
+async function send() {
+  const name = document.getElementById('name').value;
+  if(!name) return alert('نام را وارد کنید');
+  const chat_id = tg.initDataUnsafe.user?.id;
+  const res = await axios.post('https://YOUR_N8N_DOMAIN/webhook/miniapp', { name, chat_id });
+  document.getElementById('response').innerText = res.data?.message || 'ارسال شد!';
+}
+</script>
+
+</body>
+</html>
