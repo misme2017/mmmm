@@ -108,7 +108,7 @@
 
         const data = await res.json();
 
-        if (data.verified) {
+        if (Array.isArray(data) && data[0]?.verified) {
           document.getElementById('loginCard').style.display = 'none';
           document.getElementById('nextCard').style.display = 'block';
           document.getElementById('welcomeMsg').innerText = `سلام ${user.first_name || 'کاربر'}! ورود شما موفقیت‌آمیز بود.`;
