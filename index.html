@@ -1,98 +1,46 @@
-<!--
-Simple single-file HTML page to collect Email and Password and send to an n8n webhook.
-Instructions:
-1. Replace WEBHOOK_URL with your n8n webhook URL (must be HTTPS).
-2. Host this file on a secure host (or open locally for testing with ngrok pointing to n8n).
-3. In n8n, configure a Webhook node to receive POST JSON and map fields to your Notion mapping.
-4. IMPORTANT: Do not store passwords in plaintext. Use n8n to hash/encrypt or store only tokens.
--->
-
 <!doctype html>
 <html lang="fa">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>ورود / ارسال اطلاعات</title>
+  <title>ورود با تلگرام</title>
   <style>
-    :root{font-family:system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;}
-    body{display:flex;align-items:center;justify-content:center;height:100vh;background:#f6f7fb;margin:0}
-    .card{background:white;border-radius:12px;padding:28px;box-shadow:0 6px 20px rgba(20,20,50,0.08);width:360px}
-    h1{font-size:18px;margin:0 0 12px;text-align:center}
-    label{display:block;font-size:13px;margin:10px 0 6px}
-    input{width:100%;padding:10px;border:1px solid #e5e7eb;border-radius:8px;box-sizing:border-box}
-    .row{display:flex;gap:8px}
-    button{width:100%;padding:10px;margin-top:16px;border:none;border-radius:8px;background:#4f46e5;color:white;font-weight:600;cursor:pointer}
-    .hint{font-size:12px;color:#6b7280;margin-top:8px}
-    .success{color:green;margin-top:10px}
-    .error{color:#b91c1c;margin-top:10px}
+    body{display:flex;align-items:center;justify-content:center;height:100vh;background:#f9fafb;font-family:sans-serif}
+    .card{background:white;padding:30px;border-radius:12px;box-shadow:0 5px 15px rgba(0,0,0,0.1);width:340px;text-align:center}
+    button{background:#0088cc;color:white;border:none;padding:10px 20px;border-radius:8px;cursor:pointer;font-size:15px;margin-top:10px}
+    pre{background:#f3f4f6;padding:10px;border-radius:8px;text-align:left;direction:ltr;overflow:auto}
   </style>
 </head>
 <body>
-  <div class="card" role="region" aria-label="Login form">
-    <h1>ارسال اطلاعات ورود</h1>
-    <form id="loginForm">
-      <label for="email">ایمیل</label>
-      <input id="email" name="email" type="email" placeholder="example@mail.com" required />
-
-      <label for="password">پسورد</label>
-      <input id="password" name="password" type="password" placeholder="••••••••" autocomplete="current-password" required />
-
-      <label for="account">شماره حساب (اختیاری)</label>
-      <input id="account" name="account" type="text" placeholder="مثلا 160624928" />
-
-      <button type="submit">ارسال به n8n</button>
-
-      <div class="hint">اطمینان حاصل کنید که آدرس وبهوک n8n را در کد جایگزین کرده‌اید.</div>
-      <div id="msg" aria-live="polite"></div>
-    </form>
+  <div class="card">
+    <h2>ورود با تلگرام</h2>
+    <p>برای ادامه روی دکمه زیر کلیک کنید:</p>
+    <button onclick="login()">ورود</button>
+    <div id="result"></div>
   </div>
 
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script>
-    // === CONFIG: آدرس وبهوک شما ===
-    const WEBHOOK_URL = 'https://30530-0p8me.s2.irann8n.com/webhook/5eae1e83-ee18-425f-a510-1832660a7b2d';
-    // ==============================
+    const tg = window.Telegram.WebApp;
+    tg.expand();
 
-    const form = document.getElementById('loginForm');
-    const msg = document.getElementById('msg');
-
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      msg.textContent = '';
-
-      const payload = {
-        email: document.getElementById('email').value.trim(),
-        password: document.getElementById('password').value,
-        account: document.getElementById('account').value.trim(),
-        sentAt: new Date().toISOString()
-      };
-
-      // basic client validation
-      if (!payload.email || !payload.password) {
-        msg.className = 'error';
-        msg.textContent = 'ایمیل و پسورد لازم است.';
+    function login() {
+      const user = tg.initDataUnsafe?.user;
+      if (!user) {
+        document.getElementById('result').innerHTML = '<p style="color:red">⚠️ لطفاً از داخل تلگرام باز کنید.</p>';
         return;
       }
 
-      try {
-        // send as JSON POST
-        const res = await fetch(WEBHOOK_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
+      document.getElementById('result').innerHTML =
+        `<pre>${JSON.stringify(user, null, 2)}</pre>`;
 
-        if (!res.ok) throw new Error('خطا در ارسال: ' + res.status);
-
-        msg.className = 'success';
-        msg.textContent = 'ارسال شد — بررسی در n8n در جریان است.';
-
-        // clear password field for safety
-        document.getElementById('password').value = '';
-      } catch (err) {
-        msg.className = 'error';
-        msg.textContent = 'ارسال ناموفق: ' + err.message;
-      }
-    });
+      // اگر خواستی، اطلاعات رو به n8n بفرست:
+      fetch('https://YOUR-N8N-DOMAIN/webhook/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(user)
+      });
+    }
   </script>
 </body>
 </html>
