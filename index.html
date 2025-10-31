@@ -5,10 +5,41 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>ورود با تلگرام</title>
   <style>
-    body{display:flex;align-items:center;justify-content:center;height:100vh;background:#f9fafb;font-family:sans-serif}
-    .card{background:white;padding:30px;border-radius:12px;box-shadow:0 5px 15px rgba(0,0,0,0.1);width:340px;text-align:center}
-    button{background:#0088cc;color:white;border:none;padding:10px 20px;border-radius:8px;cursor:pointer;font-size:15px;margin-top:10px}
-    pre{background:#f3f4f6;padding:10px;border-radius:8px;text-align:left;direction:ltr;overflow:auto}
+    body {
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      height:100vh;
+      background:#f9fafb;
+      font-family:sans-serif;
+      direction:rtl;
+    }
+    .card {
+      background:white;
+      padding:30px;
+      border-radius:12px;
+      box-shadow:0 5px 15px rgba(0,0,0,0.1);
+      width:340px;
+      text-align:center;
+    }
+    button {
+      background:#0088cc;
+      color:white;
+      border:none;
+      padding:10px 20px;
+      border-radius:8px;
+      cursor:pointer;
+      font-size:15px;
+      margin-top:10px;
+    }
+    pre {
+      background:#f3f4f6;
+      padding:10px;
+      border-radius:8px;
+      text-align:left;
+      direction:ltr;
+      overflow:auto;
+    }
   </style>
 </head>
 <body>
@@ -24,22 +55,41 @@
     const tg = window.Telegram.WebApp;
     tg.expand();
 
-    function login() {
+    async function login() {
       const user = tg.initDataUnsafe?.user;
+      const resultDiv = document.getElementById('result');
+
       if (!user) {
-        document.getElementById('result').innerHTML = '<p style="color:red">⚠️ لطفاً از داخل تلگرام باز کنید.</p>';
+        resultDiv.innerHTML = '<p style="color:red">⚠️ لطفاً این صفحه را از داخل تلگرام باز کنید.</p>';
         return;
       }
 
-      document.getElementById('result').innerHTML =
-        `<pre>${JSON.stringify(user, null, 2)}</pre>`;
+      resultDiv.innerHTML = '<p>⏳ در حال ارسال اطلاعات...</p>';
 
-      // اگر خواستی، اطلاعات رو به n8n بفرست:
-      fetch('https://YOUR-N8N-DOMAIN/webhook/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(user)
-      });
+      try {
+        const res = await fetch('https://30530-0p8me.s2.irann8n.com/webhook/login-form', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            telegram_id: user.id,
+            first_name: user.first_name,
+            last_name: user.last_name,
+            username: user.username,
+            language: user.language_code
+          })
+        });
+
+        if (!res.ok) throw new Error('خطا در ارسال');
+
+        const text = await res.text();
+        resultDiv.innerHTML = `
+          <p style="color:green">✅ ورود با موفقیت انجام شد.</p>
+          <pre>${JSON.stringify(user, null, 2)}</pre>
+        `;
+      } catch (err) {
+        resultDiv.innerHTML = `<p style="color:red">❌ خطا در اتصال به سرور</p>`;
+        console.error(err);
+      }
     }
   </script>
 </body>
